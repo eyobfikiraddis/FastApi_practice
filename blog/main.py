@@ -44,4 +44,10 @@ def delet(id, db : Session = Depends(get_db)):
     db.query(models.Blog).filter(models.Blog.id == id).delete(synchronize_session=False)
     db.commit()
     return {'done'}
-    
+
+#update
+@app.put('/{id}')
+def update(id, request: schemas.Blog,db : Session = Depends(get_db)):
+    db.query(models.Blog).filter(models.Blog.id == id).update({'title': request.title, 'day': request.day}) #or we can say .update(request)
+    db.commit()
+    return 'updated'
