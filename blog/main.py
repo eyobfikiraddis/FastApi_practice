@@ -51,3 +51,5 @@ def update(id, request: schemas.Blog,db : Session = Depends(get_db)):
     db.query(models.Blog).filter(models.Blog.id == id).update({'title': request.title, 'day': request.day}) #or we can say .update(request)
     db.commit()
     return 'updated'
+
+#2:08:31
