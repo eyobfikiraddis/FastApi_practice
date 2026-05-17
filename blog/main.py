@@ -40,7 +40,7 @@ def getin(id, db : Session = Depends(get_db)):
 
 @app.delete('/{id}')
 
-def delet(id, db : Session = Depends(get_db)):
+def delete(id, db : Session = Depends(get_db)):
     db.query(models.Blog).filter(models.Blog.id == id).delete(synchronize_session=False)
     db.commit()
     return {'done'}
