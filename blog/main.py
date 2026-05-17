@@ -63,3 +63,22 @@ def update(id, request: schemas.Blog,db : Session = Depends(get_db)):
 def getblog(id, response = Response, db : Session = Depends(get_db)):
     b = db.query(models.Blog).filter(models.Blog.id == id).first()
     return b
+
+
+
+
+
+
+
+@app.post('/users')
+def create_user(request: schemas.User, db : Session = Depends(get_db)):
+    new = models.User(name = request.name, password = request.password)
+    db.add(new)
+    db.commit()
+    db.refresh(new)
+    return new 
+
+@app.get('/users/{id}', response_model = schemas.User)
+def getuser(id, response = Response, db : Session = Depends(get_db)):
+    u = db.query(models.User).filter(models.User.id == id).first()
+    return u
