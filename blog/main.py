@@ -1,7 +1,8 @@
-from fastapi import FastAPI, Depends
+from fastapi import FastAPI, Depends, Response
 from pydantic import BaseModel
 from .database import engine, sessionlocal
 from sqlalchemy.orm import Session
+from typing import List
 from . import schemas, models
 
 models.Base.metadata.create_all(engine)
@@ -27,7 +28,10 @@ def create(request: schemas.Blog, db : Session = Depends(get_db)):
     db.refresh(new)
     return db
 
-@app.get('/')
+
+#adding the response model that only contains the title and not the day
+#response model allows us to display only the things we want to
+@app.get('/', response_model= List[schemas.ShowBlog])
 def all(db:Session = Depends(get_db)):
     b = db.query(models.Blog).all()
     return b
@@ -53,3 +57,9 @@ def update(id, request: schemas.Blog,db : Session = Depends(get_db)):
     return 'updated'
 
 #2:08:31
+
+
+@app.get('/blog/{id}', response_model = schemas.ShowBlog)
+def getblog(id, response = Response, db : Session = Depends(get_db)):
+    b = db.query(models.Blog).filter(models.Blog.id == id).first()
+    return b
