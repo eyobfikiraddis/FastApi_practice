@@ -4,7 +4,9 @@ from .database import engine, sessionlocal
 from sqlalchemy.orm import Session
 from typing import List
 from . import schemas, models
+from passlib.context import CryptContext
 
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 models.Base.metadata.create_all(engine)
 
 def get_db():
@@ -70,15 +72,25 @@ def getblog(id, response = Response, db : Session = Depends(get_db)):
 
 
 
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
 @app.post('/users')
-def create_user(request: schemas.User, db : Session = Depends(get_db)):
-    new = models.User(name = request.name, password = request.password)
+def create_user(request: schemas.User, db: Session = Depends(get_db)):
+    hashed_password = pwd_context.hash(request.password)
+
+    new = models.User(
+        name=request.name,
+        password=hashed_password
+    )
+
     db.add(new)
     db.commit()
     db.refresh(new)
-    return new 
+
+    return new
 
 @app.get('/users/{id}', response_model = schemas.User)
 def getuser(id, response = Response, db : Session = Depends(get_db)):
     u = db.query(models.User).filter(models.User.id == id).first()
     return u
+
