@@ -3,10 +3,8 @@ from pydantic import BaseModel
 from .database import engine, sessionlocal
 from sqlalchemy.orm import Session
 from typing import List
-from . import schemas, models
-from passlib.context import CryptContext
+from . import schemas, models, hashing
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 models.Base.metadata.create_all(engine)
 
 def get_db():
@@ -33,8 +31,8 @@ def create(request: schemas.Blog, db : Session = Depends(get_db)):
 
 #adding the response model that only contains the title and not the day
 #response model allows us to display only the things we want to
-@app.get('/', response_model= List[schemas.ShowBlog])
-def all(db:Session = Depends(get_db)):
+@app.get('/all_b', response_model= List[schemas.ShowBlog])
+def get_all_blogs(db:Session = Depends(get_db)):
     b = db.query(models.Blog).all()
     return b
 
@@ -72,11 +70,11 @@ def getblog(id, response = Response, db : Session = Depends(get_db)):
 
 
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
-@app.post('/users')
+
+@app.post('/users', response_model = schemas.ShowUser)
 def create_user(request: schemas.User, db: Session = Depends(get_db)):
-    hashed_password = pwd_context.hash(request.password)
+    hashed_password = hashing.Hash.bcrypt(request.password)
 
     new = models.User(
         name=request.name,
@@ -89,8 +87,14 @@ def create_user(request: schemas.User, db: Session = Depends(get_db)):
 
     return new
 
-@app.get('/users/{id}', response_model = schemas.User)
+@app.get('/users/{id}', response_model = schemas.ShowUser)
 def getuser(id, response = Response, db : Session = Depends(get_db)):
     u = db.query(models.User).filter(models.User.id == id).first()
     return u
 
+#2:26:53
+
+@app.get('/users', response_model= List[schemas.ShowUser])
+def get_all_users(db:Session = Depends(get_db)):
+    u = db.query(models.User).all()
+    return u

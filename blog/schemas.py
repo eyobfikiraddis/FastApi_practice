@@ -18,9 +18,10 @@ class User(BaseModel):
     name: str
     password: str
 
-# class UserOut(BaseModel):
-#     id: int
-#     name: str
-#     class Config():
-#         orm_mode = True
+
+
+class ShowUser(BaseModel):
+    name: str
+    class Config():
+        orm_mode = True
     
