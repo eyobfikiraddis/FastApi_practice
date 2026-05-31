@@ -20,7 +20,7 @@ app = FastAPI()
 #     title: str
 #     day: int
 
-@app.post('/')
+@app.post('/blogs', response_model = schemas.ShowBlog, tags=['blogs'])
 def create(request: schemas.Blog, db : Session = Depends(get_db)):
     new = models.Blog(title = request.title, day = request.day)
     db.add(new)
@@ -31,26 +31,30 @@ def create(request: schemas.Blog, db : Session = Depends(get_db)):
 
 #adding the response model that only contains the title and not the day
 #response model allows us to display only the things we want to
-@app.get('/all_b', response_model= List[schemas.ShowBlog])
+@app.get('/all_blogs', response_model= List[schemas.ShowBlog], tags=['blogs'])
 def get_all_blogs(db:Session = Depends(get_db)):
     b = db.query(models.Blog).all()
     return b
 
-@app.get('/{id}')
+@app.get('/blogs/{id}', response_model = schemas.ShowBlog, tags=['blogs'])
 #to get those with the same id
-def getin(id, db : Session = Depends(get_db)):
+def get_blog(id, db : Session = Depends(get_db), response = Response):
     b = db.query(models.Blog).filter(models.Blog.id == id).first() #to return only the fist one but if we wanted to return all we use .all()
     return b
+# @app.get('/blog/{id}', response_model = schemas.ShowBlog)
+# def getblog(id, response = Response, db : Session = Depends(get_db)):
+#     b = db.query(models.Blog).filter(models.Blog.id == id).first()
+#     return b
 
-@app.delete('/{id}')
 
+@app.delete('/blogs/{id}',response_model= schemas.ShowBlog, tags=['blogs'])
 def delete(id, db : Session = Depends(get_db)):
     db.query(models.Blog).filter(models.Blog.id == id).delete(synchronize_session=False)
     db.commit()
     return {'done'}
 
 #update
-@app.put('/{id}')
+@app.put('/edit_blogs/{id}', response_model = schemas.ShowBlog, tags=['blogs'])
 def update(id, request: schemas.Blog,db : Session = Depends(get_db)):
     db.query(models.Blog).filter(models.Blog.id == id).update({'title': request.title, 'day': request.day}) #or we can say .update(request)
     db.commit()
@@ -59,10 +63,6 @@ def update(id, request: schemas.Blog,db : Session = Depends(get_db)):
 #2:08:31
 
 
-@app.get('/blog/{id}', response_model = schemas.ShowBlog)
-def getblog(id, response = Response, db : Session = Depends(get_db)):
-    b = db.query(models.Blog).filter(models.Blog.id == id).first()
-    return b
 
 
 
@@ -72,7 +72,7 @@ def getblog(id, response = Response, db : Session = Depends(get_db)):
 
 
 
-@app.post('/users', response_model = schemas.ShowUser)
+@app.post('/users', response_model = schemas.ShowUser, tags=['users'])
 def create_user(request: schemas.User, db: Session = Depends(get_db)):
     hashed_password = hashing.Hash.bcrypt(request.password)
 
@@ -87,14 +87,14 @@ def create_user(request: schemas.User, db: Session = Depends(get_db)):
 
     return new
 
-@app.get('/users/{id}', response_model = schemas.ShowUser)
+@app.get('/users/{id}', response_model = schemas.ShowUser, tags=['users'])
 def getuser(id, response = Response, db : Session = Depends(get_db)):
     u = db.query(models.User).filter(models.User.id == id).first()
     return u
 
 #2:26:53
 
-@app.get('/users', response_model= List[schemas.ShowUser])
+@app.get('/all_users', response_model= List[schemas.ShowUser], tags=['users'])
 def get_all_users(db:Session = Depends(get_db)):
     u = db.query(models.User).all()
     return u
