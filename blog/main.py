@@ -20,13 +20,13 @@ app = FastAPI()
 #     title: str
 #     day: int
 
-@app.post('/blogs', response_model = schemas.ShowBlog, tags=['blogs'])
+@app.post('/blogs', response_model = schemas.Blog, tags=['blogs'])
 def create(request: schemas.Blog, db : Session = Depends(get_db)):
-    new = models.Blog(title = request.title, day = request.day)
+    new = models.Blog(title = request.title, day = request.day, user_id = 1)
     db.add(new)
     db.commit()
     db.refresh(new)
-    return db
+    return new
 
 
 #adding the response model that only contains the title and not the day
