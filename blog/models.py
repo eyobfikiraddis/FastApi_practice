@@ -3,7 +3,7 @@ from sqlalchemy.orm import relationship
 from .database import base as Base
 
 class Blog(Base):
-    __tablename__ = "blogss"
+    __tablename__ = "blogs"
 
     id = Column(Integer, primary_key=True, index=True)
     title = Column(String)

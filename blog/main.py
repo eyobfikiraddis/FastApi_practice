@@ -1,5 +1,4 @@
-from fastapi import FastAPI, Depends, Response
-from pydantic import BaseModel
+from fastapi import FastAPI, Depends, Response, HTTPException
 from .database import engine, sessionlocal
 from sqlalchemy.orm import Session
 from typing import List
@@ -20,7 +19,7 @@ app = FastAPI()
 #     title: str
 #     day: int
 
-@app.post('/blogs', response_model = schemas.Blog, tags=['blogs'])
+@app.post('/blogs', tags=['blogs'])
 def create(request: schemas.Blog, db : Session = Depends(get_db)):
     new = models.Blog(title = request.title, day = request.day, user_id = 1)
     db.add(new)
@@ -38,8 +37,8 @@ def get_all_blogs(db:Session = Depends(get_db)):
 
 @app.get('/blogs/{id}', response_model = schemas.ShowBlog, tags=['blogs'])
 #to get those with the same id
-def get_blog(id, db : Session = Depends(get_db), response = Response):
-    b = db.query(models.Blog).filter(models.Blog.id == id).first() #to return only the fist one but if we wanted to return all we use .all()
+def get_blog(id, response: Response, db : Session = Depends(get_db)):
+    b = db.query(models.Blog).filter(models.Blog.id == id).first()
     return b
 # @app.get('/blog/{id}', response_model = schemas.ShowBlog)
 # def getblog(id, response = Response, db : Session = Depends(get_db)):
@@ -49,16 +48,24 @@ def get_blog(id, db : Session = Depends(get_db), response = Response):
 
 @app.delete('/blogs/{id}',response_model= schemas.ShowBlog, tags=['blogs'])
 def delete(id, db : Session = Depends(get_db)):
-    db.query(models.Blog).filter(models.Blog.id == id).delete(synchronize_session=False)
+    b = db.query(models.Blog).filter(models.Blog.id == id).first()
+    if not b:
+        raise HTTPException(status_code=404, detail='Blog not found')
+    db.delete(b)
     db.commit()
-    return {'done'}
+    return b
 
 #update
 @app.put('/edit_blogs/{id}', response_model = schemas.ShowBlog, tags=['blogs'])
 def update(id, request: schemas.Blog,db : Session = Depends(get_db)):
-    db.query(models.Blog).filter(models.Blog.id == id).update({'title': request.title, 'day': request.day}) #or we can say .update(request)
+    b = db.query(models.Blog).filter(models.Blog.id == id).first()
+    if not b:
+        raise HTTPException(status_code=404, detail='Blog not found')
+    b.title = request.title
+    b.day = request.day
     db.commit()
-    return 'updated'
+    db.refresh(b)
+    return b
 
 #2:08:31
 
@@ -88,7 +95,7 @@ def create_user(request: schemas.User, db: Session = Depends(get_db)):
     return new
 
 @app.get('/users/{id}', response_model = schemas.ShowUser, tags=['users'])
-def getuser(id, response = Response, db : Session = Depends(get_db)):
+def getuser(id, response: Response, db : Session = Depends(get_db)):
     u = db.query(models.User).filter(models.User.id == id).first()
     return u
 

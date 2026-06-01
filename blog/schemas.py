@@ -1,14 +1,6 @@
 from pydantic import BaseModel
  
-class Blog(BaseModel):
-    title: str
-    day: int
-    user_id: int
 
-class ShowBlog(BaseModel):
-    title: str
-    class Config():
-        orm_mode = True
 
 
 
@@ -23,6 +15,18 @@ class User(BaseModel):
 
 class ShowUser(BaseModel):
     name: str
+    class Config():
+        orm_mode = True
+
+
+class Blog(BaseModel):
+    title: str
+    day: int
+    user_id: int
+
+class ShowBlog(BaseModel):
+    title: str
+    created_by: ShowUser
     class Config():
         orm_mode = True
     
